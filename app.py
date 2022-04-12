@@ -21,12 +21,25 @@ def post_education():
 	graduated = 0;
 	args = request.args;
 	admin_message = f" These are the request parameters {args} \n"
-	if('graduated' in args.keys()):
-		graduated = args['graduated']
-		if(graduated == "1"):
-			admin_message += " You have graduated , admission success :)"
-		else:
-			admin_message += " You have not graduated , admission fail :("
+	
+	#Criteria for admissions, 
+	#Min years of education >= 4 years, (hence |start_year_1 - end_year_1|  + |start_year_2 - end_year_2| >= 4)
+	#Atleast 1 graduation = true
+	total_years_education = 0
+	graduated = False
+	for arg in args.keys():
+		obj_found = json.loads(args[arg]);
+		s_y = obj_found["start_year"].split("T")
+		e_y = obj_found["end_year"].split("T")
+		if(s_y):
+			s_y = int(s_y[0].split("-")[0])
+		if(e_y):
+			e_y = int(e_y[0].split("-")[0])
+		total_years_education += abs(s_y - e_y)
+		graduated = obj_found["graduated"]
+	if(total_years_education >= 4 and graduated):
+		admin_message += f" Admission success !!! Criteria considered Years of education {total_years_education} AND graduated {graduated}"
 	else:
-		admin_message += " Wrong parameters sent , check again !!"
+		admin_message += f" Admission failed !!! Criteria considered Years of education {total_years_education} AND graduated {graduated}"
 	return {"admin_message" : admin_message}
+	
